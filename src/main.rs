@@ -2,13 +2,25 @@ use std::env;
 use std::io;
 use std::process;
 
+
+fn handle_bracketed_pattern(input_line: &str, pattern: &str) -> bool {
+    if pattern.starts_with('[') && pattern.ends_with(']') {
+        let chars = &pattern[1..pattern.len() - 1];
+        if input_line.chars().any(|c| c == '^') {
+            let chars= &chars[1..];
+            return !input_line.chars().any(|c| chars.contains(c));
+        }
+        return input_line.chars().any(|c| chars.contains(c));
+    }
+    false
+}
+
 fn match_pattern(input_line: &str, pattern: &str) -> bool {
     if pattern.chars().count() == 1 {
         return input_line.contains(pattern);
     } 
     if pattern.starts_with('[') && pattern.ends_with(']') {
-        let chars = &pattern[1..pattern.len() - 1];
-        return input_line.chars().any(|c| chars.contains(c));
+        return handle_bracketed_pattern(input_line, pattern);
     }
     match pattern {
         "\\w" => input_line.chars().any(|c| c.is_ascii_alphanumeric() || c == '_'),
