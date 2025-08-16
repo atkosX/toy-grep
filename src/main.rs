@@ -6,15 +6,16 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
     if pattern.chars().count() == 1 {
         return input_line.contains(pattern);
     } 
-    else if pattern=="\\w"{
-        return input_line.chars().any(|c| c.is_ascii_alphanumeric() || c == '_');
+    if pattern.starts_with('[') && pattern.ends_with(']') {
+        let chars = &pattern[1..pattern.len() - 1];
+        return input_line.chars().any(|c| chars.contains(c));
     }
-    else if pattern == "\\d" {
-        return input_line.chars().any(|c| c.is_ascii_digit());
-    } else {
-        panic!("Unhandled pattern: {}", pattern)
+    match pattern {
+        "\\w" => input_line.chars().any(|c| c.is_ascii_alphanumeric() || c == '_'),
+        "\\d" => input_line.chars().any(|c| c.is_ascii_digit()),
+        "\\s" => input_line.chars().any(|c| c.is_whitespace()),
+        _ => panic!("Unhandled pattern: {}", pattern),
     }
-    
 }
 
 // Usage: echo <input_text> | your_program.sh -E <pattern>
@@ -32,8 +33,7 @@ fn main() {
 
     io::stdin().read_line(&mut input_line).unwrap();
 
-    // Uncomment this block to pass the first stage
-    if match_pattern(&input_line, &pattern) {
+    if match_pattern(&input_line.trim_end(), &pattern) {
         process::exit(0)
     } else {
         process::exit(1)
